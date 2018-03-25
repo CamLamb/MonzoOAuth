@@ -43,3 +43,14 @@ You can check if the monzo session is authorized by using the `authorized()` fun
 If this returns `False`, it means that you need to add credentials or authorize the user again, you can add credentials with `set_credentials(credentials)`
 
 If this returns `True`, it doesn't necessarily mean you are good to fire commands, you might still need to re authenticate depending on how much time has passed.
+
+## Running queries
+[Monzo API](https://monzo.com/docs/)
+There is a handy function that you simply pass the path and any url query options to and it will return a response for you.
+```
+path = 'balance'
+options = {
+  'account_id': 'ACCOUNT_ID'
+}
+response = monzo.query(path=path, options=options)
+```
