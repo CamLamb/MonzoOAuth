@@ -4,7 +4,7 @@ setup(
     name='MonzoOAuth',
     version='0.1',
     description='An OAuth2 Monzo Client',
-    url='http://github.com/storborg/funniest',
+    url='https://github.com/jafacakes2011/MonzoOAuth',
     author='Cameron',
     author_email='',
     license='MIT',
