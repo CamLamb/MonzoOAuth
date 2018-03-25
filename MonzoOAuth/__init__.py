@@ -1,6 +1,4 @@
 from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
-import string
-import random
 import httplib2
 import json
 
