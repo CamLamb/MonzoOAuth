@@ -128,7 +128,7 @@ class Account:
 
         transactions = []
         for transaction in response['transactions']:
-            transactions.append(Transaction(monzo=self.monzo, id=transaction['id'], transaction=transaction))_
+            transactions.append(Transaction(monzo=self.monzo, id=transaction['id'], transaction=transaction))
         return transactions
 
     def get_pots(self):
