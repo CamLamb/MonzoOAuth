@@ -39,7 +39,7 @@ class MonzoOAuth:
         self.state = state
 
     def get_auth_link(self):
-        return self.flow.step1_get_authorize_url(state=self.get_state())
+        return self.flow.step1_get_authorize_url()
 
     def exchange_code(self, code):
         self.credentials = self.credentials_to_dict(credentials=self.flow.step2_exchange({'code': code}))
