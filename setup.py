@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='MonzoOAuth',
-    version='0.2.0',
+    version='0.2.1',
     description='An OAuth2 Monzo Client',
     url='https://github.com/jafacakes2011/MonzoOAuth',
     author='Cameron',
