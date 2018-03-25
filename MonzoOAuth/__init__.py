@@ -72,8 +72,6 @@ class MonzoOAuth:
             if options:
                 query_string = '?'
                 for key, option in options.items():
-                    print(key)
-                    print(option)
                     query_string += key + '=' + option + '&'
                 query_string = query_string[:-1]
 
