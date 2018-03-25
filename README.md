@@ -1,8 +1,5 @@
 # MonzoOAuth
 This is an OAuth client wrapper for quickly working with the monzo api.
-
-## Dependencies
-- oauth2client
  
 ## Usage
 Create an instance of the MonzoOAuth client.
@@ -18,19 +15,12 @@ monzo = MonzoOAuth(
 ```
 The `monzo_credentials` is a variable used to store the authenticated credentials returned when logged in.
 
-Grab the state variable from your monzo client
-```python
-state = monzo.get_state()
-```
-We will use this later to verify the authentication.
-
 Redirect the user to the URL provided by `get_auth_link()`
 ```python
 redirect_url = monzo.get_auth_link()
 ```
 
-At the `/auth` url, compare the state in the url query to the state you stored earlier.
-If they match, store the code variable form the url query, in this example we will call this `code`.
+At the `/auth` url, store the code variable form the url query, in this example we will call this `code`.
 Now we swap this code for an access_token using 
 ```python
 monzo_credentials = monzo.exchange_code(code)

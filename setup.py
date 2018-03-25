@@ -9,5 +9,8 @@ setup(
     author_email='',
     license='MIT',
     packages=['MonzoOAuth'],
+    install_requires=[
+      'oauth2client',
+  ],
     zip_safe=False
 )
