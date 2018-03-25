@@ -17,7 +17,6 @@ class MonzoOAuth:
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.credentials = credentials
-        self.state = None
         self.flow = OAuth2WebServerFlow(
             client_id=self.client_id,
             client_secret=self.client_secret,
@@ -29,14 +28,6 @@ class MonzoOAuth:
             device_uri='',
             token_info_uri='',
         )
-
-    def get_state(self):
-        if not self.state:
-            self.state = "".join(random.choice(string.ascii_letters + string.digits) for x in range(24))
-        return self.state
-
-    def set_state(self, state):
-        self.state = state
 
     def get_auth_link(self):
         return self.flow.step1_get_authorize_url()
