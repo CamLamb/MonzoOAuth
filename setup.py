@@ -11,6 +11,7 @@ setup(
     packages=['MonzoOAuth'],
     install_requires=[
       'oauth2client',
+      'httplib2',
     ],
     zip_safe=False
 )
