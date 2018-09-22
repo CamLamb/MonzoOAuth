@@ -1,6 +1,9 @@
-from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
-import httplib2
 import json
+import os
+
+import httplib2
+from oauth2client.client import OAuth2WebServerFlow
+from oauth2client.file import Storage
 
 
 class MonzoOAuth:
@@ -9,11 +12,13 @@ class MonzoOAuth:
     api_url = 'https://api.monzo.com/'
     http = httplib2.Http()
 
-    def __init__(self, client_id, client_secret, redirect_uri, credentials={}):
+    def __init__(self, client_id, client_secret, redirect_uri, token_file_path):
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
-        self.credentials = credentials
+        self.token_file_path = token_file_path
+        self.store = Storage(token_file_path)
+        self.credentials = self.store.get() if os.path.exists(token_file_path) else None
         self.flow = OAuth2WebServerFlow(
             client_id=self.client_id,
             client_secret=self.client_secret,
@@ -30,11 +35,9 @@ class MonzoOAuth:
         return self.flow.step1_get_authorize_url()
 
     def exchange_code(self, code):
-        self.credentials = self.credentials_to_dict(credentials=self.flow.step2_exchange({'code': code}))
-        return self.credentials
-
-    def set_credentials(self, credentials):
-        self.credentials = credentials
+        self.credentials = self.flow.step2_exchange({'code': code})
+        self.store.put(self.credentials)
+        return self.credentials_to_dict(self.credentials)
 
     def authorized(self):
         if self.credentials is not {} and self.credentials is not None:
@@ -43,17 +46,7 @@ class MonzoOAuth:
 
     def query(self, path, options={}):
         if self.authorized():
-            auth_creds = OAuth2Credentials(
-                access_token=self.credentials['access_token'],
-                refresh_token=self.credentials['refresh_token'],
-                token_uri=self.credentials['token_uri'],
-                client_id=self.credentials['client_id'],
-                client_secret=self.credentials['client_secret'],
-                scopes=self.credentials['scopes'],
-                token_expiry=self.credentials['token_expiry'],
-                user_agent=self.credentials['user_agent']
-            )
-            self.http = auth_creds.authorize(self.http)
+            self.http = self.credentials.authorize(self.http)
 
             query_string = ''
 
@@ -67,7 +60,8 @@ class MonzoOAuth:
             return json.loads(response[1])
         return {}
 
-    def credentials_to_dict(self, credentials):
+    @staticmethod
+    def credentials_to_dict(credentials):
         return {
             'access_token': credentials.access_token,
             'refresh_token': credentials.refresh_token,
