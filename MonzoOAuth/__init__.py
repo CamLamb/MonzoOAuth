@@ -1,4 +1,5 @@
 from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
+from typing import Type
 import httplib2
 import json
 
@@ -83,35 +84,47 @@ class MonzoOAuth:
 class User:
     def __init__(self, monzo: MonzoOAuth):
         self.monzo = monzo
-        self.total_balance = Price(amount=0, currency_code='GBP')
+        self.total_balance = None
+        self.accounts = []
+        self.get_accounts()
+        self.pots = []
+        self.get_pots()
 
     def get_accounts(self):
-        response = self.monzo.query('accounts')
+        if not self.accounts:
+            response = self.monzo.query('accounts')
 
-        accounts = []
-        for account in response['accounts']:
-            accounts.append(Account(monzo=self.monzo, id=account['id'], account=account))
+            accounts = []
+            for account in response['accounts']:
+                accounts.append(Account(monzo=self.monzo, id=account['id'], account=account))
+            self.accounts = accounts
 
-        return accounts
+        return self.accounts
 
     def get_pots(self):
-        response = self.monzo.query('pots')
+        if not self.pots:
+            response = self.monzo.query('pots')
 
-        pots = []
-        for pot in response['pots']:
-            pots.append(Pot(monzo=self.monzo, id=pot['id'], pot=pot))
+            pots = []
+            for pot in response['pots']:
+                pots.append(Pot(monzo=self.monzo, id=pot['id'], pot=pot))
 
-        return pots
+            self.pots = pots
+
+        return self.pots
 
     def get_total_balance(self):
         if not self.total_balance:
+            total_balance = Price(amount=0, currency_code='GBP')
+
             accounts = self.get_accounts()
             for account in accounts:
-                self.total_balance = self.total_balance.add(account.get_balance())
+                total_balance = total_balance.add(account.get_balance())
 
             pots = self.get_pots()
             for pot in pots:
-                self.total_balance = self.total_balance.add(pot.get_balance())
+                total_balance = total_balance.add(pot.get_balance())
+            self.total_balance = total_balance
 
         return self.total_balance
 
@@ -130,8 +143,13 @@ class Account:
         self.id = account['id']
         self.description = account['description']
         self.created = account['created']
+        self.closed = account['closed']
         self.balance = None
+        self.get_balance()
         self.spent_today = None
+        self.get_spent_today()
+        self.transactions = []
+        self.get_transactions()
 
     def get_balance(self):
         if not self.balance:
@@ -146,12 +164,15 @@ class Account:
         return self.spent_today
 
     def get_transactions(self):
-        response = self.monzo.query('transactions', {'account_id': self.id})
+        if not self.transactions:
+            response = self.monzo.query('transactions', {'account_id': self.id})
 
-        transactions = []
-        for transaction in response['transactions']:
-            transactions.append(Transaction(monzo=self.monzo, id=transaction['id'], transaction=transaction))
-        return transactions
+            transactions = []
+            for transaction in response['transactions']:
+                transactions.append(Transaction(monzo=self.monzo, id=transaction['id'], transaction=transaction))
+
+            self.transactions = transactions
+        return self.transactions
 
 
 class Pot:
@@ -208,7 +229,7 @@ class Price:
         self.amount = amount
         self.currency_code = currency_code
 
-    def add(self, price: Price):
+    def add(self, price: 'Price'):
         if self.currency_code == price.currency_code:
             new_amount = self.amount + price.amount
             return Price(amount=new_amount, currency_code=self.currency_code)
