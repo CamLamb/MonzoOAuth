@@ -1,7 +1,9 @@
-from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
-from typing import Type
-import httplib2
 import json
+import os
+
+import httplib2
+from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
+from oauth2client.file import Storage
 
 
 class MonzoOAuth:
@@ -10,11 +12,28 @@ class MonzoOAuth:
     api_url = 'https://api.monzo.com/'
     http = httplib2.Http()
 
-    def __init__(self, client_id, client_secret, redirect_uri, credentials={}):
+    def __init__(self, client_id, client_secret, redirect_uri, credentials: dict=None, token_file_path=None):
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
-        self.credentials = credentials
+
+        self.credentials = None
+        if credentials:
+            self.credentials = OAuth2Credentials(
+                access_token=credentials['access_token'],
+                client_id=credentials['client_id'],
+                client_secret=credentials['client_secret'],
+                refresh_token=credentials['refresh_token'],
+                token_expiry=credentials['token_expiry'],
+                token_uri=credentials['token_uri'],
+                user_agent=credentials['user_agent'],
+                scopes=credentials['scopes']
+            )
+
+        self.token_file_path = token_file_path
+        if token_file_path and os.path.exists(token_file_path):
+            self.credentials = Storage(token_file_path).get()
+
         self.flow = OAuth2WebServerFlow(
             client_id=self.client_id,
             client_secret=self.client_secret,
@@ -31,30 +50,21 @@ class MonzoOAuth:
         return self.flow.step1_get_authorize_url()
 
     def exchange_code(self, code):
-        self.credentials = self.credentials_to_dict(credentials=self.flow.step2_exchange({'code': code}))
-        return self.credentials
+        self.credentials = self.flow.step2_exchange({'code': code})
 
-    def set_credentials(self, credentials):
-        self.credentials = credentials
+        if self.token_file_path and os.path.exists(self.token_file_path):
+            Storage(self.token_file_path).put(self.credentials)
+
+        return self.credentials_to_dict(self.credentials)
 
     def authorized(self):
         if self.credentials is not {} and self.credentials is not None:
             return True
         return False
 
-    def query(self, path, options={}):
+    def query(self, path, options: dict = None):
         if self.authorized():
-            auth_creds = OAuth2Credentials(
-                access_token=self.credentials['access_token'],
-                refresh_token=self.credentials['refresh_token'],
-                token_uri=self.credentials['token_uri'],
-                client_id=self.credentials['client_id'],
-                client_secret=self.credentials['client_secret'],
-                scopes=self.credentials['scopes'],
-                token_expiry=self.credentials['token_expiry'],
-                user_agent=self.credentials['user_agent']
-            )
-            self.http = auth_creds.authorize(self.http)
+            self.http = self.credentials.authorize(self.http)
 
             query_string = ''
 
@@ -68,7 +78,8 @@ class MonzoOAuth:
             return json.loads(response[1])
         return {}
 
-    def credentials_to_dict(self, credentials):
+    @staticmethod
+    def credentials_to_dict(credentials):
         return {
             'access_token': credentials.access_token,
             'refresh_token': credentials.refresh_token,
