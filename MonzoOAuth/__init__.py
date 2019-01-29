@@ -107,7 +107,7 @@ class User:
 
             accounts = []
             for account in response['accounts']:
-                accounts.append(Account(monzo=self.monzo, aid=account['id'], account=account))
+                accounts.append(Account(monzo=self.monzo, id=account['id'], account=account))
             self.accounts = accounts
 
         return self.accounts
@@ -118,7 +118,7 @@ class User:
 
             pots = []
             for pot in response['pots']:
-                pots.append(Pot(monzo=self.monzo, pid=pot['id'], pot=pot))
+                pots.append(Pot(monzo=self.monzo, id=pot['id'], pot=pot))
 
             self.pots = pots
 
@@ -141,13 +141,13 @@ class User:
 
 
 class Account:
-    def __init__(self, monzo: MonzoOAuth, aid: str, account: dict = None):
+    def __init__(self, monzo: MonzoOAuth, id: str, account: dict = None):
         self.monzo = monzo
 
         if not account:
             accounts = monzo.query('accounts')['accounts']
             for a in accounts:
-                if a['id'] == aid:
+                if a['id'] == id:
                     account = a
                     break
 
@@ -180,20 +180,20 @@ class Account:
 
             transactions = []
             for transaction in response['transactions']:
-                transactions.append(Transaction(monzo=self.monzo, tid=transaction['id'], transaction=transaction))
+                transactions.append(Transaction(monzo=self.monzo, id=transaction['id'], transaction=transaction))
 
             self.transactions = transactions
         return self.transactions
 
 
 class Pot:
-    def __init__(self, monzo: MonzoOAuth, pid: str, pot: dict = None):
+    def __init__(self, monzo: MonzoOAuth, id: str, pot: dict = None):
         self.monzo = monzo
 
         if not pot:
             pots = monzo.query('pots')['pots']
             for p in pots:
-                if p['id'] == pid:
+                if p['id'] == id:
                     pot = p
                     break
 
@@ -215,11 +215,11 @@ class Pot:
 
 class Transaction:
 
-    def __init__(self, monzo: MonzoOAuth, tid: str, transaction: dict = None):
+    def __init__(self, monzo: MonzoOAuth, id: str, transaction: dict = None):
         self.monzo = monzo
 
         if not transaction:
-            transaction = monzo.query('transactions/' + tid, {'expand[]': 'merchant'})['transaction']
+            transaction = monzo.query('transactions/' + id, {'expand[]': 'merchant'})['transaction']
 
         self.id = transaction['id']
         self.amount = transaction['amount']
