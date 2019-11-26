@@ -1,6 +1,8 @@
 Register your App: https://developers.monzo.com/apps
 Read the docs: https://docs.monzo.com/
 
+This project is formatted using [Black](https://black.readthedocs.io/en/stable/)
+
 # Authentication
 ## Acquire an access token
  - Redirect the user to Monzo to authorise the app
